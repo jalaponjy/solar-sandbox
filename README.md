@@ -105,3 +105,10 @@ shaders/        GLSL (procedural planets, atmospheres, rings, sky, bloom ...)
 Planetary orbits use JPL J2000 mean elements; moon orbits use published semi-major axes, eccentricities and
 inclinations. Where an exact orbital phase is unknown (most moons) a deterministic pseudo-random phase is used. The
 simulation starts at the J2000 epoch (2000-01-01 12:00).
+
+## License & releases
+
+MIT licensed - see [LICENSE](LICENSE). Pre-built Windows downloads are on the
+[Releases](../../releases) page; they are produced automatically by `.github/workflows/release.yml`
+when a version tag such as `v1.0.0` is pushed. Third-party libraries (GLFW, GLM, Dear ImGui, glad) keep their own
+permissive licenses.

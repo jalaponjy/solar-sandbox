@@ -1,0 +1,49 @@
+name: Release
+
+# Push a tag like v1.0.0 to build the Windows app and publish it as a GitHub Release.
+# You can also run it by hand from the Actions tab (it then only uploads a build artifact).
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+
+      - name: Build
+        run: cmake --build build --config Release --target solar_sandbox sim_test
+
+      - name: Run physics tests
+        run: build\Release\sim_test.exe
+
+      - name: Package
+        shell: pwsh
+        run: |
+          $dir = "SolarSandbox-${{ github.ref_name }}-windows-x64"
+          New-Item -ItemType Directory -Path $dir | Out-Null
+          Copy-Item build\Release\solar_sandbox.exe $dir\
+          Copy-Item -Recurse build\Release\shaders $dir\shaders
+          Copy-Item README.md, LICENSE $dir\
+          Compress-Archive -Path $dir -DestinationPath "$dir.zip"
+          "ASSET=$dir.zip" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SolarSandbox-windows-x64
+          path: ${{ env.ASSET }}
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.ASSET }}
+          generate_release_notes: true

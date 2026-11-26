@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.20)
 project(SolarSandbox LANGUAGES C CXX)
 
+# Static MSVC runtime: the release .exe runs without installing the Visual C++ redistributable.
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
