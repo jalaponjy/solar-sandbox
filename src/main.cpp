@@ -111,7 +111,7 @@ dvec3 moonRenderOffset(const App& a, int parentIdx, const dvec3& rel) {
   const double k = a.renderScale();
   const double r = glm::length(rel);
   if (r < 1e-9) return rel * k;
-  const double r0 = 70.0 * a.sim.body(parentIdx).radius;     // farOut-out irregular moons are compressed
+  const double r0 = 70.0 * a.sim.body(parentIdx).radius;     // far-out irregular moons are compressed
   const double m = r <= r0 ? r : r0 + (r - r0) * 0.08;
   return rel * (m / r * k);
 }
@@ -200,7 +200,7 @@ void updateCamera(App& a, double dt) {
     const double px = ext / d * a.focalPx;
     double t = glm::clamp((px - 12.0) / 30.0, 0.0, 1.0);
     t = t * t * (3 - 2 * t);
-    const double farOut = glm::clamp((d / std::max(ext, 1.0) - 2.5) / 2.5, 0.0, 1.0);   // camera farOut outside the system
+    const double farOut = glm::clamp((d / std::max(ext, 1.0) - 2.5) / 2.5, 0.0, 1.0);   // camera far outside the system
     t *= 1.0 - farOut * farOut * (3 - 2 * farOut);
     const double inside = glm::clamp((ext / d - 1.2) / 1.3, 0.0, 1.0);          // camera sits inside this orbit
     t *= 1.0 - inside * inside * (3 - 2 * inside);
@@ -331,7 +331,7 @@ BodyDraw makeDraw(const App& a, int i) {
   return d;
 }
 
-// Lines farOut from the camera (relative to how farOut we are zoomed out) fade away, so a close-up of
+// Lines far from the camera (relative to how far we are zoomed out) fade away, so a close-up of
 // one world isn't crossed by the orbits of every other planet.
 float distanceFade(const App& a, const dvec3& w) {
   const double d = glm::length(w - a.camPos);
