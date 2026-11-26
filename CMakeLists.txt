@@ -44,9 +44,9 @@ add_library(solar_core STATIC
 target_include_directories(solar_core PUBLIC src)
 target_link_libraries(solar_core PUBLIC glm::glm)
 if(MSVC)
-  target_compile_options(solar_core PRIVATE /W3 /O2 /fp:fast)
+  target_compile_options(solar_core PRIVATE /W3 /fp:fast)
 else()
-  target_compile_options(solar_core PRIVATE -Wall -Wextra -O2)
+  target_compile_options(solar_core PRIVATE -Wall -Wextra $<$<NOT:$<CONFIG:Debug>>:-O2>)
 endif()
 
 # ---- The app -----------------------------------------------------------
