@@ -11,7 +11,7 @@ uniform float uWidth;
 void main() {
   vec4 c0 = uVP * vec4(vPos[0], 1.0), c1 = uVP * vec4(vPos[1], 1.0);
   float a0 = vAlpha[0], a1 = vAlpha[1];
-  const float nearW = 1e-5;
+  const float nearW = 1e-3;
   if (c0.w < nearW && c1.w < nearW) return;
   if (c0.w < nearW) { float t = (nearW - c0.w) / (c1.w - c0.w); c0 = mix(c0, c1, t); a0 = mix(a0, a1, t); }
   if (c1.w < nearW) { float t = (nearW - c1.w) / (c0.w - c1.w); c1 = mix(c1, c0, t); a1 = mix(a1, a0, t); }

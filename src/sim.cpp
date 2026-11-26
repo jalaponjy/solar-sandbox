@@ -66,6 +66,14 @@ void Simulation::reset() {
       b.spinRate = (b.def.incDeg > 90.0 && !b.def.refEcliptic) ? -n : n;
     }
   }
+  // Tidally locked moons: start with the near side (local +x) pointing at the parent.
+  for (size_t i = 0; i < bodies.size(); ++i) {
+    Body& b = bodies[i];
+    if (b.parent < 0 || b.def.rotHours != 0) continue;
+    const Frame f = frameFromPole(b.pole);
+    const dvec3 toParent = bodies[b.parent].pos - b.pos;
+    b.spinPhase = std::atan2(dot(toParent, f.y), dot(toParent, f.x));
+  }
   zeroMomentum();
   refreshClassification();
   clearTrails();

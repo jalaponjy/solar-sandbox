@@ -195,7 +195,7 @@ std::vector<Finding> analyzeOrbit(const App& a, int i, const Elements& res, bool
       int lost = 0;
       for (int c : b.children) {
         Elements me;
-        if (a.sim.elements(c, me) && me.bound && me.apoapsis() > 0.5 * rH) ++lost;
+        if (a.sim.elements(c, me) && me.bound && me.apoapsis() > (me.inc > kPi / 2 ? 0.70 : 0.50) * rH) ++lost;
       }
       if (lost > 0)
         out.push_back({kWarn, std::to_string(lost) + " of " + std::to_string(b.children.size()) + " moons lie outside the stable zone at periapsis (Hill radius " + kmString(rH) + ") and may be lost."});
@@ -384,6 +384,16 @@ void drawSandboxTab(App& a, int i) {
     say(kCyan, "Its radius would be about " + fmt("%.3g", Rr) + "x the real one.");
     say(kCyan, "Planetary years change by " + fmt("%.3g", 1.0 / std::sqrt(mul)) + "x for orbits unchanged in size - but the planets keep their speeds, so most orbits will be reshaped.");
     say(kCyan, "The habitable zone moves to around " + fmt("%.2f", std::sqrt(L)) + " AU (Earth sits at 1 AU).");
+    {   // which planets would the swollen Sun swallow?
+      std::string eaten;
+      for (int j = 1; j < a.sim.count(); ++j) {
+        const Body& pl = a.sim.body(j);
+        if (pl.parent != 0) continue;
+        Elements pe;
+        if (a.sim.elements(j, pe) && pe.periapsis() < b.radius * Rr) eaten += (eaten.empty() ? "" : ", ") + pl.def.name;
+      }
+      if (!eaten.empty()) say(kWarn, "The enlarged Sun would swallow: " + eaten + ".");
+    }
     if (mul < 0.5f) say(kWarn, "With so little pull, planets move faster than the Sun's escape speed and will fly away.");
     if (mul > 2.0f) say(kWarn, "Planets are suddenly deep in a stronger gravity well: orbits become highly elliptical and may cross.");
   } else {
@@ -394,10 +404,11 @@ void drawSandboxTab(App& a, int i) {
       Elements me;
       if (!a.sim.elements(c, me)) continue;
       ++total;
-      if (!me.bound || me.apoapsis() > 0.5 * rH * 1.0) ++lost;
+      const double lim = (me.inc > kPi / 2 ? 0.70 : 0.50) * rH;   // retrograde orbits are stable out to ~0.7 Hill radii
+      if (!me.bound || me.apoapsis() > lim) ++lost;
     }
     if (total > 0) {
-      if (lost > 0) say(kWarn, std::to_string(lost) + " of " + std::to_string(total) + " moons orbit beyond half the Hill radius and will drift away or be captured by the Sun.");
+      if (lost > 0) say(kWarn, std::to_string(lost) + " of " + std::to_string(total) + " moons now lie outside the stable zone (0.5 Hill radii, 0.7 if retrograde) and will drift away or be captured by the Sun.");
       else say(kGood, "All " + std::to_string(total) + " moons stay safely bound.");
     }
     if (b.def.kind != BodyKind::Moon) {
@@ -631,7 +642,9 @@ void drawExplorer(App& a) {
 }
 
 void drawTimeBar(App& a) {
-  ImGui::SetNextWindowPos(ImVec2((float)a.winW * 0.5f, 14), ImGuiCond_Always, ImVec2(0.5f, 0));
+  const float left = S(300) + 28.f;
+  const float right = a.selected >= 0 ? (float)a.winW - S(400) - 28.f : (float)a.winW;
+  ImGui::SetNextWindowPos(ImVec2((left + right) * 0.5f, 14), ImGuiCond_Always, ImVec2(0.5f, 0));
   ImGui::Begin("##time", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
   if (ImGui::Button(a.paused ? "  Play  " : " Pause ")) a.paused = !a.paused;
   ImGui::SameLine();
@@ -717,6 +730,19 @@ void drawUI(App& a) {
 
 void drawOverlays(App& a) {
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
+  {   // first-run hint
+    static double firstUse = -1;
+    if (firstUse < 0) firstUse = ImGui::GetTime();
+    const double age = ImGui::GetTime() - firstUse;
+    if (!a.hideUI && a.selected < 0 && age < 25.0) {
+      const char* msg = "Scroll to zoom   -   drag to rotate   -   click a planet or moon to learn about it   -   press H to hide the interface";
+      const ImVec2 sz = ImGui::CalcTextSize(msg);
+      const float alpha = (float)std::min(1.0, (25.0 - age) / 4.0);
+      const ImVec2 p((float)a.winW * 0.5f + S(150) - sz.x * 0.5f, (float)a.winH - 34.f);
+      dl->AddRectFilled(ImVec2(p.x - 12, p.y - 6), ImVec2(p.x + sz.x + 12, p.y + sz.y + 6), IM_COL32(8, 12, 24, (int)(170 * alpha)), 8.f);
+      dl->AddText(p, IM_COL32(220, 230, 255, (int)(230 * alpha)), msg);
+    }
+  }
   ImGuiIO& io = ImGui::GetIO();
   const float scale = (float)a.winH / std::max(1, a.fbH);
   int hover = -1;

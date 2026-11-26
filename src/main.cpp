@@ -321,7 +321,7 @@ BodyDraw makeDraw(const App& a, int i) {
   const dvec3 toSun = a.rpos[0] - a.rpos[i];
   d.sunDir = glm::length(toSun) > 0 ? vec3(glm::normalize(toSun)) : vec3(1, 0, 0);
   const double dAU = std::max(glm::length(a.sim.body(i).pos - a.sim.body(0).pos) / kAU, 0.25);
-  d.sunI = (float)(1.7 * std::pow(dAU, -0.6)) * a.sunLumi[0];
+  d.sunI = (float)(1.7 * std::pow(dAU, -0.4)) * a.sunLumi[0];
   d.atmoThickness = (b.def.kind == BodyKind::Moon) ? 0.10f : 0.12f;
   return d;
 }
@@ -350,7 +350,7 @@ void appendOrbit(std::vector<LineVertex>& out, const App& a, int i, const Elemen
       double behind = std::fmod(nu0 - nuK, 2.0 * 3.14159265358979);
       if (behind < 0) behind += 2.0 * 3.14159265358979;
       const double f = 1.0 - behind / (2.0 * 3.14159265358979);
-      alpha = (float)(0.20 + 0.80 * std::pow(f, 3.0));
+      alpha = (float)(0.34 + 0.66 * std::pow(f, 3.0));
     }
     out.push_back({vec3((w - a.camPos) / 1000.0), alpha * distanceFade(a, w)});
   }

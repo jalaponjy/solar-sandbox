@@ -5,6 +5,7 @@ Fly from the Sun out to Eris, zoom in on any planet or moon, and bend the rules:
 re-shape orbits, rewind time, change the strength of gravity - and watch what happens.
 
 ![overview](docs/overview.png)
+![saturn](docs/saturn.png)
 
 ## Features
 
