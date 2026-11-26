@@ -9,6 +9,11 @@
 
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <windows.h>
+#endif
 #include <glm/gtc/matrix_transform.hpp>
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
@@ -495,9 +500,21 @@ std::vector<std::string> shaderDirs(const char* argv0) {
 
 }  // namespace
 
+static int fatal(const char* msg) {
+  std::fprintf(stderr, "FATAL: %s\n", msg);
+  std::fflush(stderr);
+#ifdef _WIN32
+  std::string text = std::string(msg) + "\n\nDetails were written to solar_sandbox_log.txt (next to where you ran the program).";
+  MessageBoxA(nullptr, text.c_str(), "Solar System Sandbox", MB_OK | MB_ICONERROR);
+#endif
+  return 1;
+}
+
 int main(int argc, char** argv) {
+  if (!std::freopen("solar_sandbox_log.txt", "w", stderr)) { /* keep console stderr */ }
+  glfwSetErrorCallback([](int code, const char* desc) { std::fprintf(stderr, "GLFW error %d: %s\n", code, desc); });
   const Options opt = parseArgs(argc, argv);
-  if (!glfwInit()) { std::fprintf(stderr, "Failed to initialise GLFW\n"); return 1; }
+  if (!glfwInit()) return fatal("Failed to initialise GLFW");
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -505,10 +522,11 @@ int main(int argc, char** argv) {
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
   GLFWwindow* window = glfwCreateWindow(opt.width, opt.height, "Solar System Sandbox", nullptr, nullptr);
-  if (!window) { std::fprintf(stderr, "Failed to create a window / OpenGL 3.3 context\n"); glfwTerminate(); return 1; }
+  if (!window) { glfwTerminate(); return fatal("Could not create a window with an OpenGL 3.3 context. Update your graphics driver."); }
   glfwMakeContextCurrent(window);
   glfwSwapInterval(opt.frames > 0 ? 0 : 1);
-  if (!gladLoadGL((GLADloadfunc)glfwGetProcAddress)) { std::fprintf(stderr, "Failed to load OpenGL\n"); return 1; }
+  if (!gladLoadGL((GLADloadfunc)glfwGetProcAddress)) return fatal("Failed to load OpenGL functions.");
+  std::fprintf(stderr, "OpenGL: %s | %s\n", (const char*)glGetString(GL_VERSION), (const char*)glGetString(GL_RENDERER));
   glfwSetScrollCallback(window, scrollCallback);
 
   IMGUI_CHECKVERSION();
@@ -521,7 +539,7 @@ int main(int argc, char** argv) {
 
   App* app = new App();
   App& a = *app;
-  if (!a.renderer.init(shaderDirs(argv[0]))) { std::fprintf(stderr, "Shader initialisation failed\n"); return 1; }
+  if (!a.renderer.init(shaderDirs(argv[0]))) return fatal("Shader loading/compiling failed (shaders folder missing next to the exe, or your GPU rejected a shader).");
 
   // initial state
   computeRenderSpace(a);
