@@ -26,7 +26,7 @@ void main() {
   float shadow = 1.0;
   if (disc > 0.0 && -b - sqrt(disc) > -1e30 && (-b + sqrt(disc)) > 0.0 && b < 0.0)
     shadow = 0.04;
-  float tint = 0.85 + 0.3 * noise3(vec3(x * 55.0, 3.0, 1.0));
+  float tint = 0.85 + 0.3 * vnoise(vec3(x * 55.0, 3.0, 1.0));
   // forward scattering: rings glow when seen against the sun side
   float fwd = pow(max(dot(-V, L), 0.0), 3.0) * 0.6;
   vec3 col = srgb2lin(uRingColor) * tint * (lit * shadow * uSunI + fwd * uSunI * 0.6 * shadow);

@@ -28,7 +28,7 @@ vec3 hash33(vec3 p3) {
   p3 += dot(p3, p3.yxz + 33.33);
   return fract((p3.xxy + p3.yxx) * p3.zyx);
 }
-float noise3(vec3 x) {
+float vnoise(vec3 x) {
   vec3 i = floor(x), f = fract(x);
   f = f * f * (3.0 - 2.0 * f);
   return mix(mix(mix(hash13(i), hash13(i + vec3(1, 0, 0)), f.x),
@@ -39,7 +39,7 @@ float noise3(vec3 x) {
 float fbm(vec3 p, int oct) {
   float s = 0.0, a = 0.5;
   for (int i = 0; i < oct; i++) {
-    s += a * noise3(p);
+    s += a * vnoise(p);
     p = p * 2.03 + vec3(5.2, 1.3, 8.7);
     a *= 0.5;
   }
@@ -48,7 +48,7 @@ float fbm(vec3 p, int oct) {
 float ridged(vec3 p, int oct) {
   float s = 0.0, a = 0.5;
   for (int i = 0; i < oct; i++) {
-    float n = 1.0 - abs(2.0 * noise3(p) - 1.0);
+    float n = 1.0 - abs(2.0 * vnoise(p) - 1.0);
     s += a * n * n;
     p = p * 2.07 + vec3(1.7, 9.2, 3.1);
     a *= 0.5;
@@ -89,7 +89,7 @@ float ringProfile(float x) {
   return clamp(c + b + a + cass, 0.0, 1.0);
 }
 float ringDensity(float x) {
-  float fine = 0.55 + 0.45 * noise3(vec3(x * 260.0, 1.0, 2.0));
-  fine *= 0.75 + 0.25 * noise3(vec3(x * 900.0, 5.0, 9.0));
+  float fine = 0.55 + 0.45 * vnoise(vec3(x * 260.0, 1.0, 2.0));
+  fine *= 0.75 + 0.25 * vnoise(vec3(x * 900.0, 5.0, 9.0));
   return ringProfile(x) * fine;
 }

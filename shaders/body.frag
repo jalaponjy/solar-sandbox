@@ -67,11 +67,11 @@ vec3 gasColor(vec3 p, bool jup, vec3 c1, vec3 c2, vec3 c3) {
     float lon = atan(p.y, p.x);
     float dx = (lon - 0.6) * sqrt(max(1.0 - lat * lat, 0.0));
     float dy = lat + 0.28;
-    float swirl = noise3(vec3(dx * 22.0, dy * 40.0, uSeed)) * 0.25;
+    float swirl = vnoise(vec3(dx * 22.0, dy * 40.0, uSeed)) * 0.25;
     float d = length(vec2(dx / 0.21, dy / 0.075)) + swirl;
     float spot = 1.0 - smoothstep(0.75, 1.0, d);
     float halo = (1.0 - smoothstep(1.0, 1.5, d)) * 0.25;
-    vec3 sc = mix(srgb2lin(vec3(0.74, 0.30, 0.20)), srgb2lin(vec3(0.88, 0.52, 0.34)), noise3(vec3(dx * 30.0, dy * 70.0, 2.0)));
+    vec3 sc = mix(srgb2lin(vec3(0.74, 0.30, 0.20)), srgb2lin(vec3(0.88, 0.52, 0.34)), vnoise(vec3(dx * 30.0, dy * 70.0, 2.0)));
     col = mix(col, c1 * 1.15, halo);
     col = mix(col, sc, spot * 0.92);
   }
@@ -121,7 +121,7 @@ Surf surface(vec3 p) {
     s.albedo = mix(col, vec3(0.93), cl);
     s.spec = (1.0 - isLand) * (1.0 - clamp(ice, 0.0, 1.0)) * (1.0 - cl) * 0.9;
     s.gloss = 110.0;
-    float cities = smoothstep(0.62, 0.9, noise3(p * 26.0) * (0.5 + noise3(p * 6.0)));
+    float cities = smoothstep(0.62, 0.9, vnoise(p * 26.0) * (0.5 + vnoise(p * 6.0)));
     s.emitNight = vec3(1.0, 0.72, 0.38) * cities * isLand * (1.0 - clamp(ice, 0.0, 1.0)) * (1.0 - cl * 0.9) * 0.9;
   } else if (uType == 3) {  // ---- Venus clouds
     vec3 q = p * vec3(1.6, 1.6, 3.0);
