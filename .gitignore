@@ -1,0 +1,7 @@
+build/
+out/
+cmake-build-*/
+.vs/
+*.png
+!docs/*.png
+solar_sandbox_screenshot.png
