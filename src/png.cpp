@@ -54,8 +54,8 @@ bool savePNG(const char* path, const uint8_t* rgba, int w, int h) {
   while (pos < raw.size()) {
     const size_t n = std::min<size_t>(65535, raw.size() - pos);
     z.push_back(pos + n >= raw.size() ? 1 : 0);
-    z.push_back(n & 0xff); z.push_back(n >> 8);
-    z.push_back(~n & 0xff); z.push_back((~n >> 8) & 0xff);
+    z.push_back((uint8_t)(n & 0xff)); z.push_back((uint8_t)(n >> 8));
+    z.push_back((uint8_t)(~n & 0xff)); z.push_back((uint8_t)((~n >> 8) & 0xff));
     z.insert(z.end(), raw.begin() + pos, raw.begin() + pos + n);
     pos += n;
   }

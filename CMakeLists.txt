@@ -57,7 +57,7 @@ add_executable(solar_sandbox
   src/png.cpp)
 target_link_libraries(solar_sandbox PRIVATE solar_core glad glfw imgui_lib)
 target_compile_definitions(solar_sandbox PRIVATE
-  SOLAR_SOURCE_DIR="${CMAKE_SOURCE_DIR}" GLM_ENABLE_EXPERIMENTAL)
+  SOLAR_SOURCE_DIR="${CMAKE_SOURCE_DIR}" GLM_ENABLE_EXPERIMENTAL _CRT_SECURE_NO_WARNINGS)
 if(MSVC)
   target_compile_options(solar_sandbox PRIVATE /W3 /utf-8)
   set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT solar_sandbox)
