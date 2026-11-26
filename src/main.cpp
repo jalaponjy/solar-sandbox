@@ -500,18 +500,33 @@ std::vector<std::string> shaderDirs(const char* argv0) {
 
 }  // namespace
 
+static std::string g_logPath = "solar_sandbox_log.txt";
+
+static std::string exeDir(const char* argv0) {
+#ifdef _WIN32
+  char buf[MAX_PATH];
+  const DWORD n = GetModuleFileNameA(nullptr, buf, MAX_PATH);
+  std::string p(buf, n);
+#else
+  std::string p = argv0 ? argv0 : "";
+#endif
+  const size_t slash = p.find_last_of("/\\");
+  return slash == std::string::npos ? std::string(".") : p.substr(0, slash);
+}
+
 static int fatal(const char* msg) {
   std::fprintf(stderr, "FATAL: %s\n", msg);
   std::fflush(stderr);
 #ifdef _WIN32
-  std::string text = std::string(msg) + "\n\nDetails were written to solar_sandbox_log.txt (next to where you ran the program).";
+  std::string text = std::string(msg) + "\n\nDetails were written to:\n" + g_logPath;
   MessageBoxA(nullptr, text.c_str(), "Solar System Sandbox", MB_OK | MB_ICONERROR);
 #endif
   return 1;
 }
 
 int main(int argc, char** argv) {
-  if (!std::freopen("solar_sandbox_log.txt", "w", stderr)) { /* keep console stderr */ }
+  g_logPath = exeDir(argv[0]) + "/solar_sandbox_log.txt";
+  if (!std::freopen(g_logPath.c_str(), "w", stderr)) { /* keep console stderr */ }
   glfwSetErrorCallback([](int code, const char* desc) { std::fprintf(stderr, "GLFW error %d: %s\n", code, desc); });
   const Options opt = parseArgs(argc, argv);
   if (!glfwInit()) return fatal("Failed to initialise GLFW");
